@@ -1,1 +1,4 @@
+11/30/2025
+- Update script terbaru tersedia
+- Perbaikan bug dan peningkatan performa
 https://raw.githubusercontent.com/Nurga2/Script/refs/heads/main/README.md
