@@ -1,0 +1,125 @@
+require "import"
+import "android.content.*"
+import "android.widget.*"
+import "android.view.*"
+import "com.androlua.LuaDialog"
+
+local context = service or activity
+
+-- Fungsi Utilitas: Get Tanggal Hari Ini (Format Bulan/Tanggal/Tahun)
+-- Format harus MM/DD/YYYY agar sesuai dengan logika script update sebelumnya
+local function getTodayDate()
+  return os.date("%m/%d/%Y")
+end
+
+-- Layout UI
+local layout = {
+  LinearLayout,
+  orientation="vertical",
+  layout_width="match_parent",
+  layout_height="match_parent",
+  padding="20dp",
+  backgroundColor="#FFFFFF",
+  {
+    TextView,
+    text="📝 Update Release Generator",
+    textSize="20sp",
+    textStyle="bold",
+    textColor="#333333",
+    layout_marginBottom="20dp",
+    gravity="center"
+  },
+  -- Input Tanggal
+  {
+    TextView,
+    text="Tanggal Versi Baru (Bulan/Tgl/Thn):",
+    textColor="#666666",
+  },
+  {
+    EditText,
+    id="editTanggal",
+    text=getTodayDate(), -- Otomatis isi tanggal hari ini
+    hint="Contoh: 11/22/2025",
+    inputType="date",
+    layout_width="match_parent",
+    layout_marginBottom="15dp"
+  },
+  -- Input Link Download
+  {
+    TextView,
+    text="Link Download Script Baru (Direct/Raw):",
+    textColor="#666666",
+  },
+  {
+    EditText,
+    id="editLink",
+    hint="https://raw.githubusercontent.com/.../main.lua",
+    inputType="textUri",
+    layout_width="match_parent",
+    minLines=2,
+    layout_marginBottom="15dp"
+  },
+  -- Input Perubahan (Changelog)
+  {
+    TextView,
+    text="Apa yang baru? (Poin-poin):",
+    textColor="#666666",
+  },
+  {
+    EditText,
+    id="editChanges",
+    hint="- Menambahkan fitur X\n- Memperbaiki bug Y",
+    gravity="top",
+    minLines=5,
+    layout_width="match_parent",
+    layout_marginBottom="20dp",
+    background="#F0F0F0",
+    padding="10dp"
+  },
+  -- Tombol Generate
+  {
+    Button,
+    id="btnGenerate",
+    text="Salin Kode Update 📋",
+    backgroundColor="#4CAF50",
+    textColor="#FFFFFF",
+    layout_width="match_parent",
+    layout_height="wrap_content"
+  }
+}
+
+-- Tampilkan Layout
+local dlg = LuaDialog(context)
+dlg.setView(loadlayout(layout))
+dlg.setTitle("Update Server Manager")
+
+-- Logika Tombol
+btnGenerate.setOnClickListener(function()
+  local tgl = editTanggal.getText().toString()
+  local link = editLink.getText().toString()
+  local changes = editChanges.getText().toString()
+
+  -- Validasi Sederhana
+  if link == "" then
+    service.speak("Link download tidak boleh kosong!")
+    return
+  end
+
+  -- FORMATTING: Menyusun teks sesuai format yang bisa dibaca script Client
+  -- Baris 1: Tanggal
+  -- Baris 2 dst: Deskripsi
+  -- Baris Terakhir: Link
+  
+  local finalOutput = string.format("%s\n\n%s\n\nLink Download:\n%s", tgl, changes, link)
+
+  -- Salin ke Clipboard
+  service.copy(finalOutput)
+  
+  -- Feedback
+  service.speak("Kode disalin! Tempel ke file txt di GitHub.")
+  print("Hasil:\n" .. finalOutput) -- Tampilkan di log untuk preview
+  dlg.dismiss()
+end)
+
+dlg.setButton("Tutup", function() dlg.dismiss() end)
+dlg.show()
